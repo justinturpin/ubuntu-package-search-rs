@@ -1,5 +1,20 @@
 image: rust:latest
 
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+  - target/
+
+stages:
+  - test
+  - build
+
+test:
+  stage: test
+  script:
+    - cargo test
+
 build:
+  stage: build
   script:
     - cargo build
