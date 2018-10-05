@@ -1,0 +1,6 @@
+[package]
+name = "ubuntu-package-search"
+version = "0.1.0"
+authors = ["Justin Turpin <ionstream@gmail.com>"]
+
+[dependencies]
