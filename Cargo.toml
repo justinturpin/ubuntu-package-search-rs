@@ -5,3 +5,9 @@ authors = ["Justin Turpin <ionstream@gmail.com>"]
 
 [dependencies]
 gotham="*"
+hyper = "*"
+mime = "*"
+
+serde = "*"
+serde_json = "*"
+serde_derive = "*"

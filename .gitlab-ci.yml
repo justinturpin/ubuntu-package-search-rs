@@ -3,7 +3,9 @@ image: rust:latest
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
-  - target/
+    - apt/
+    - cargo/
+    - target/
 
 stages:
   - test
