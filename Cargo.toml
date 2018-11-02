@@ -4,7 +4,7 @@ version = "0.1.0"
 authors = ["Justin Turpin <ionstream@gmail.com>"]
 
 [dependencies]
-gotham="*"
+gotham = "0.3.0"
 hyper = "*"
 mime = "*"
 
@@ -14,3 +14,7 @@ serde_derive = "*"
 
 reqwest = "*"
 futures = "*"
+rusqlite = "*"
+
+tera = "*"
+lazy_static = "1.1.0"
