@@ -1,9 +1,12 @@
 //! A Hello World example application for working with Gotham.
 
 extern crate gotham;
+extern crate gotham_derive;
+
 extern crate hyper;
 extern crate mime;
 extern crate serde;
+extern crate serde_derive;
 extern crate serde_json;
 extern crate reqwest;
 extern crate futures;
@@ -16,12 +19,26 @@ use tera::{Tera, compile_templates};
 use hyper::{Response, StatusCode, Body};
 
 use gotham::helpers::http::response::create_response;
-use gotham::state::State;
-// use gotham::handler::HandlerFuture;
+use gotham::state::{FromState, State};
 
 use gotham::router::Router;
 use gotham::router::builder::*;
 
+use gotham_derive::StaticResponseExtender;
+use gotham_derive::StateData;
+use serde_derive::Deserialize;
+
+#[derive(Deserialize, StateData, StaticResponseExtender)]
+struct QueryStringExtractor {
+    query: String,
+}
+
+#[derive]
+struct Package {
+    name: String,
+    version: String,
+    description: String
+}
 
 lazy_static! {
     pub static ref TERA: Tera = {
@@ -34,25 +51,31 @@ lazy_static! {
 
 fn router() -> Router {
     build_simple_router(|route| {
-        route.get("/init-db").to(init_db);
+        route.get("/search")
+            .with_query_string_extractor::<QueryStringExtractor>()
+            .to(search);
     })
 }
 
-pub fn init_db(state: State) -> (State, Response<Body>) {
+pub fn search(mut state: State) -> (State, Response<Body>) {
     let conn = rusqlite::Connection::open("database.sqlite3").unwrap();
 
-    let result = conn.execute(
-        "CREATE VIRTUAL TABLE pages USING fts4(title, keywords, body)",
-        rusqlite::NO_PARAMS,
-    );
+    let query_param = QueryStringExtractor::take_from(&mut state);
 
-    let response = match result {
-        Ok(_) => String::from("table created successfully"),
-        Err(err) => err.to_string()
-    };
+    let mut stmt = conn
+        .prepare("SELECT name, version, description FROM packages WHERE name MATCH ?1 LIMIT 50")
+        .unwrap();
+
+    let package_names : Vec<String> = stmt.query_map(
+            &[&query_param.query],
+            |row| row.get(0)
+        )
+        .unwrap()
+        .map(|element| element.unwrap())
+        .collect();
 
     let mut template_context = tera::Context::new();
-    template_context.insert("message", &response);
+    template_context.insert("results", &package_names);
 
     let contents = TERA.render("index.html", &template_context).unwrap();
 

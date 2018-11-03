@@ -10,9 +10,9 @@
     <body>
         <div id="main">
             <h1>Actual Content!</h1>
-            {% if message %}
-                <p>{{ message }}</p>
-            {% endif %}
+            {% for result in results %}
+                <div>{{ result }}</div>
+            {% endfor %}
         </div>
     </body>
 </html>

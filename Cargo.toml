@@ -5,6 +5,8 @@ authors = ["Justin Turpin <ionstream@gmail.com>"]
 
 [dependencies]
 gotham = "0.3.0"
+gotham_derive = "*"
+
 hyper = "*"
 mime = "*"
 
