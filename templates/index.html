@@ -4,15 +4,38 @@
     <head>
         <link rel="stylesheet" href="https://unpkg.com/picnic">
 
-        <title>First Rust Web project</title>
+        <style type="text/css">
+            body { margin: 0 auto; max-width: 900px }
+            table { width: 100% }
+        </style>
+
+        <title>Ubuntu Bionic Package Search</title>
     </head>
 
     <body>
         <div id="main">
-            <h1>Actual Content!</h1>
-            {% for result in results %}
-                <div>{{ result }}</div>
-            {% endfor %}
+            <h1>Ubuntu Package Search</h1>
+            <form action="/search" method="get">
+                <input type="input" placeholder="Search" name="query" value="{{ query }}">
+                <input value="Search" type="submit">
+            </form>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Package Name</th>
+                        <th>Version</th>
+                    </tr>
+                </thead>
+
+                {% for result in results %}
+                    <tr>
+                        <td>
+                            <a href="https://packages.ubuntu.com/bionic/{{ result.name }}" target="_blank">{{ result.name }}</a>
+                        </td>
+                        <td>{{ result.version }}</td>
+                    </tr>
+                {% endfor %}
+            </table>
         </div>
     </body>
 </html>

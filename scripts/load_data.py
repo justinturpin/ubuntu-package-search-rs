@@ -29,6 +29,20 @@ def _yield_packages_from_file(fileobj) -> List[dict]:
         yield current_package
 
 
+def _yield_contents_from_file(fileobj) -> List[tuple]:
+    for line in fileobj.readlines():
+        filename, sources = line.strip().rsplit(maxsplit=1)
+
+        for source in sources.split(','):
+            yield filename, source
+
+
+@click.group()
+def cli():
+    pass
+
+
+@cli.command()
 def load_latest_packages():
     """
     Load the latest version of Packages.gz and ingest the data.
@@ -56,6 +70,10 @@ def load_latest_packages():
     )
     conn.commit()
 
+    cursor.execute("DELETE FROM packages")
+
+    conn.commit()
+
     count = 0
 
     for package in _yield_packages_from_file(gzipfile):
@@ -66,8 +84,55 @@ def load_latest_packages():
 
         count += 1
 
-        # if count >= 100:
-        #     break
+    click.echo("Committing changes...")
+
+    conn.commit()
+
+    click.echo("Wrote {} packages.".format(count))
+
+
+@cli.command()
+def load_latest_contents():
+    """
+    Load the latest contents from Ubuntu.
+    """
+
+    click.secho('Downloading contents file...')
+
+    response = requests.get(
+        'http://archive.ubuntu.com/ubuntu/dists/bionic/Contents-amd64.gz'
+    )
+
+    response.raise_for_status()
+
+    gzipfile = io.TextIOWrapper(
+        gzip.GzipFile(fileobj=io.BytesIO(response.content))
+    )
+
+    click.echo('Reading package contents')
+
+    conn = sqlite3.connect('database.sqlite3')
+    cursor = conn.cursor()
+
+    try:
+        cursor.execute(
+            "CREATE VIRTUAL TABLE contents USING fts4(filename, package)"
+        )
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
+
+    cursor.execute("DELETE FROM contents")
+
+    count = 0
+
+    for contents in _yield_contents_from_file(gzipfile):
+        cursor.execute(
+            'INSERT INTO contents (filename, package) VALUES (?, ?)',
+            contents
+        )
+
+        count += 1
 
     click.echo("Committing changes...")
 
@@ -77,4 +142,4 @@ def load_latest_packages():
 
 
 if __name__ == '__main__':
-    load_latest_packages()
+    cli()

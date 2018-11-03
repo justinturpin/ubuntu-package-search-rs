@@ -26,14 +26,14 @@ use gotham::router::builder::*;
 
 use gotham_derive::StaticResponseExtender;
 use gotham_derive::StateData;
-use serde_derive::Deserialize;
+use serde_derive::{Serialize, Deserialize};
 
 #[derive(Deserialize, StateData, StaticResponseExtender)]
 struct QueryStringExtractor {
     query: String,
 }
 
-#[derive]
+#[derive(Debug, Serialize)]
 struct Package {
     name: String,
     version: String,
@@ -43,7 +43,6 @@ struct Package {
 lazy_static! {
     pub static ref TERA: Tera = {
         let mut tera = compile_templates!("templates/**/*");
-        // and we can add more things to our instance if we want to
         tera.autoescape_on(vec!["html", ".sql"]);
         tera
     };
@@ -66,16 +65,22 @@ pub fn search(mut state: State) -> (State, Response<Body>) {
         .prepare("SELECT name, version, description FROM packages WHERE name MATCH ?1 LIMIT 50")
         .unwrap();
 
-    let package_names : Vec<String> = stmt.query_map(
+    let package_names : Vec<Package> = stmt.query_map(
             &[&query_param.query],
-            |row| row.get(0)
+            |row| Package{
+                name: row.get(0),
+                version: row.get(1),
+                description: row.get(1)
+            }
         )
         .unwrap()
         .map(|element| element.unwrap())
         .collect();
 
     let mut template_context = tera::Context::new();
+
     template_context.insert("results", &package_names);
+    template_context.insert("query", &query_param.query);
 
     let contents = TERA.render("index.html", &template_context).unwrap();
 
