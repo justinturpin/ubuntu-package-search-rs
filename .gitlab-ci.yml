@@ -38,3 +38,14 @@ build:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.compileandrun.com
     - docker build -t registry.compileandrun.com/ionstream/ubuntu-package-search-rs .
     - docker push registry.compileandrun.com/ionstream/ubuntu-package-search-rs
+
+deploy:
+  stage: deploy
+  image: python:3.7-alpine
+  script:
+    - apk add -U openssh build-base openssl-dev libffi-dev
+    - pip3 install fabric3
+    - mkdir ~/.ssh && chmod 700 ~/.ssh
+    - echo "${SSH_KEY}" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan compileandrun.com > ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts
+    - fab -H deploy@compileandrun.com deploy
