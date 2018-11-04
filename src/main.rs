@@ -14,6 +14,10 @@ extern crate rusqlite;
 extern crate tera;
 extern crate lazy_static;
 
+mod sqlite;
+
+// ------------------------------------
+
 use lazy_static::lazy_static;
 use tera::{Tera, compile_templates};
 use hyper::{Response, StatusCode, Body};
@@ -28,16 +32,11 @@ use gotham_derive::StaticResponseExtender;
 use gotham_derive::StateData;
 use serde_derive::{Serialize, Deserialize};
 
+// ------------------------------------
+
 #[derive(Deserialize, StateData, StaticResponseExtender)]
 struct QueryStringExtractor {
     query: Option<String>,
-}
-
-#[derive(Debug, Serialize)]
-struct Package {
-    name: String,
-    version: String,
-    description: String
 }
 
 lazy_static! {
@@ -57,29 +56,14 @@ fn router() -> Router {
 }
 
 pub fn search(mut state: State) -> (State, Response<Body>) {
-    let conn = rusqlite::Connection::open("database.sqlite3").unwrap();
+    let search_provider = sqlite::SqliteSearchProvider::new("database.sqlite3");
 
     let mut template_context = tera::Context::new();
 
     let query_param = QueryStringExtractor::take_from(&mut state);
 
     if let Some(query_string) = query_param.query {
-        let mut stmt = conn
-            .prepare("SELECT name, version, description FROM packages WHERE name MATCH ?1 LIMIT 50")
-            .unwrap();
-
-        let package_names : Vec<Package> = stmt.query_map(
-                &[&query_string],
-                |row| Package{
-                    name: row.get(0),
-                    version: row.get(1),
-                    description: row.get(2)
-                }
-            )
-            .unwrap()
-            .map(|element| element.unwrap())
-            .collect();
-
+        let package_names = search_provider.search_packages(&query_string);
 
         template_context.insert("results", &package_names);
         template_context.insert("query", &query_string);

@@ -28,6 +28,7 @@
                         <tr>
                             <th>Package Name</th>
                             <th>Version</th>
+                            <th>Source</th>
                         </tr>
                     </thead>
 
@@ -37,6 +38,7 @@
                                 <a href="https://packages.ubuntu.com/bionic/{{ result.name }}" target="_blank">{{ result.name }}</a>
                             </td>
                             <td>{{ result.version }}</td>
+                            <td>{{ result.source }}</td>
                         </tr>
                     {% endfor %}
                 </table>

@@ -9,6 +9,14 @@ import sqlite3
 from typing import List, Dict, Optional
 
 
+PACKAGE_SOURCES = [
+    ('main', 'http://archive.ubuntu.com/ubuntu/dists/bionic/main/binary-amd64/Packages.gz'),
+    ('universe', 'http://archive.ubuntu.com/ubuntu/dists/bionic/universe/binary-amd64/Packages.gz'),
+    ('multiverse', 'http://archive.ubuntu.com/ubuntu/dists/bionic/multiverse/binary-amd64/Packages.gz'),
+    ('restricted', 'http://archive.ubuntu.com/ubuntu/dists/bionic/restricted/binary-amd64/Packages.gz'),
+]
+
+
 def _yield_packages_from_file(fileobj) -> List[dict]:
     current_package = {}
 
@@ -23,7 +31,10 @@ def _yield_packages_from_file(fileobj) -> List[dict]:
         else:
             line_split = line.split(':', maxsplit=1)
 
-            current_package[line_split[0].strip().lower()] = line_split[1].strip()
+            try:
+                current_package[line_split[0].strip().lower()] = line_split[1].strip()
+            except IndexError:
+                print('Error with line: {}'.format(line))
 
     if current_package:
         yield current_package
@@ -48,27 +59,18 @@ def load_latest_packages():
     Load the latest version of Packages.gz and ingest the data.
     """
 
-    click.secho('Downloading packages file...')
-
-    response = requests.get(
-        'http://archive.ubuntu.com/ubuntu/dists/bionic/main/binary-amd64/Packages.gz'
-    )
-
-    response.raise_for_status()
-
-    gzipfile = io.TextIOWrapper(
-        gzip.GzipFile(fileobj=io.BytesIO(response.content))
-    )
-
     click.echo('Reading package contents')
 
     conn = sqlite3.connect('database.sqlite3')
     cursor = conn.cursor()
 
-    cursor.execute(
-        "CREATE VIRTUAL TABLE packages USING fts4(name, version, description)"
-    )
-    conn.commit()
+    try:
+        cursor.execute(
+            "CREATE VIRTUAL TABLE packages USING fts4(name, version, source, description)"
+        )
+        conn.commit()
+    except sqlite3.OperationalError:
+        pass
 
     cursor.execute("DELETE FROM packages")
 
@@ -76,17 +78,28 @@ def load_latest_packages():
 
     count = 0
 
-    for package in _yield_packages_from_file(gzipfile):
-        cursor.execute(
-            'INSERT INTO packages (name, version, description) VALUES (?, ?, ?)',
-            (package['package'], package['version'], package['description'])
+    for package_source, package_url in PACKAGE_SOURCES:
+        click.secho('Downloading packages file {}...'.format(package_url))
+
+        response = requests.get(package_url)
+
+        response.raise_for_status()
+
+        gzipfile = io.TextIOWrapper(
+            gzip.GzipFile(fileobj=io.BytesIO(response.content))
         )
 
-        count += 1
+        for package in _yield_packages_from_file(gzipfile):
+            cursor.execute(
+                'INSERT INTO packages (name, version, source, description) VALUES (?, ?, ?, ?)',
+                (package['package'], package['version'], package_source, package['description'])
+            )
 
-    click.echo("Committing changes...")
+            count += 1
 
-    conn.commit()
+        click.echo("Committing changes...")
+
+        conn.commit()
 
     click.echo("Wrote {} packages.".format(count))
 
