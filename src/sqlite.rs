@@ -26,7 +26,7 @@ impl SqliteSearchProvider {
             .prepare("SELECT name, version, source, description FROM packages WHERE name MATCH ?1 LIMIT 80")
             .unwrap();
 
-        let packages : Vec<Package> = stmt.query_map(
+        let package_query = stmt.query_map(
                 &[&query_string],
                 |row| Package{
                     name: row.get(0),
@@ -34,11 +34,17 @@ impl SqliteSearchProvider {
                     source: row.get(2),
                     description: row.get(3)
                 }
-            )
-            .unwrap()
-            .map(|element| element.unwrap())
-            .collect();
+            );
 
-        packages
+        // If the package query is okay, return the list of packages, otherwise just
+        // return an empty list to ease with error scenarios. Eventually this will be
+        // a proper error result.
+
+        match package_query {
+            Ok(package_iter) => package_iter.map(
+                    |element| element.unwrap()
+                ).collect(),
+            Err(_) => Vec::new()
+        }
     }
 }
