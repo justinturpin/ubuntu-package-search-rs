@@ -1,5 +1,12 @@
 image: rust:latest
 
+variables:
+  DOCKER_HOST: tcp://docker:2375/
+  DOCKER_DRIVER: overlay2
+
+services:
+  - docker:dind
+
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
@@ -7,6 +14,7 @@ cache:
 
 stages:
   - test
+  - compile
   - build
 
 test:
@@ -14,7 +22,15 @@ test:
   script:
     - cargo test
 
+compile:
+  stage: compile
+  script:
+    - cargo build --release
+    - cp target/release/ubuntu-package-search .
+
 build:
   stage: build
   script:
-    - cargo build --release
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.compileandrun.com
+    - docker build -t registry.compileandrun.com/ionstream/ubuntu-package-search .
+    - docker push registry.compileandrun.com/ionstream/ubuntu-package-search

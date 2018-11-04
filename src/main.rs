@@ -70,7 +70,7 @@ pub fn search(mut state: State) -> (State, Response<Body>) {
             |row| Package{
                 name: row.get(0),
                 version: row.get(1),
-                description: row.get(1)
+                description: row.get(2)
             }
         )
         .unwrap()
@@ -105,7 +105,7 @@ pub fn search(mut state: State) -> (State, Response<Body>) {
 // }
 
 pub fn main() {
-    let addr = "127.0.0.1:8080";
+    let addr = "0.0.0.0:8080";
     println!("Listening for requests at http://{}", addr);
     gotham::start(addr, || Ok(router()))
 }
