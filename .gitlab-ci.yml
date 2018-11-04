@@ -18,6 +18,7 @@ stages:
   - test
   - compile
   - build
+  - deploy
 
 test:
   stage: test
