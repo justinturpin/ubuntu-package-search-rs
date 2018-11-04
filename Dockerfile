@@ -11,6 +11,8 @@ COPY load_data.py load_data.py
 
 COPY run.sh run.sh
 
+COPY templates templates
+
 EXPOSE 8080
 
 CMD ["/bin/bash", "run.sh"]
