@@ -3,6 +3,7 @@ image: rust:latest
 variables:
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_DRIVER: overlay2
+  CARGO_HOME: /opt/cargo
 
 services:
   - docker:dind
@@ -10,7 +11,8 @@ services:
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
-    - ~/.cargo
+    - /opt/cargo
+    - target
 
 stages:
   - test
@@ -27,10 +29,15 @@ compile:
   script:
     - cargo build --release
     - cp target/release/ubuntu-package-search .
+  artifacts:
+    paths:
+      - ubuntu-package-search
 
 build:
   stage: build
+  image: alpine:edge
   script:
+    - apk add -U docker
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.compileandrun.com
     - docker build -t registry.compileandrun.com/ionstream/ubuntu-package-search .
     - docker push registry.compileandrun.com/ionstream/ubuntu-package-search
