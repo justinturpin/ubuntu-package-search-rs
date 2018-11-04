@@ -3,9 +3,7 @@ image: rust:latest
 cache:
   key: ${CI_COMMIT_REF_SLUG}
   paths:
-    - apt/
-    - cargo/
-    - target/
+    - ~/.cargo
 
 stages:
   - test
@@ -19,4 +17,4 @@ test:
 build:
   stage: build
   script:
-    - cargo build
+    - cargo build --release
