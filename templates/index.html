@@ -18,11 +18,25 @@
         <div id="main">
             <h1>Ubuntu Package Search</h1>
             <form action="/" method="get">
-                <input type="input" placeholder="Search" name="query" value="{{ query }}">
-                <input value="Search" type="submit">
+                <div class="flex one three-600">
+                    <div>
+                        <input type="input" placeholder="Search" name="query" value="{{ query }}">
+                    </div>
+
+                    <div>
+                        <select>
+                            <option>Package Name</option>
+                            <option>Contents</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <input value="Search" type="submit">
+                    </div>
+                </div>
             </form>
 
-            {% if results %}
+            {% if package_results %}
                 <table>
                     <thead>
                         <tr>
@@ -32,13 +46,13 @@
                         </tr>
                     </thead>
 
-                    {% for result in results %}
+                    {% for package in package_results %}
                         <tr>
                             <td>
-                                <a href="https://packages.ubuntu.com/bionic/{{ result.name }}" target="_blank">{{ result.name }}</a>
+                                <a href="https://packages.ubuntu.com/bionic/{{ package.name }}" target="_blank">{{ package.name }}</a>
                             </td>
-                            <td>{{ result.version }}</td>
-                            <td>{{ result.source }}</td>
+                            <td>{{ package.version }}</td>
+                            <td>{{ package.source }}</td>
                         </tr>
                     {% endfor %}
                 </table>

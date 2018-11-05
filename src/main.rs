@@ -63,9 +63,9 @@ pub fn search(mut state: State) -> (State, Response<Body>) {
     let query_param = QueryStringExtractor::take_from(&mut state);
 
     if let Some(query_string) = query_param.query {
-        let package_names = search_provider.search_packages(&query_string);
+        let packages = search_provider.search_packages(&query_string);
 
-        template_context.insert("results", &package_names);
+        template_context.insert("package_results", &packages);
         template_context.insert("query", &query_string);
     } else {
         template_context.insert("query", &"".to_string());
