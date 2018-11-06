@@ -1,5 +1,7 @@
 /target
 **/*.rs.bk
 *.sqlite3
+*.sqlite3.xz
+*.sqlite3.gz
 .vscode
 ubuntu-package-search

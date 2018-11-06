@@ -8,6 +8,13 @@ pub struct Package {
     description: String
 }
 
+#[derive(Debug, Serialize)]
+pub struct PackageFile {
+    filename: String,
+    package: String,
+    source: String
+}
+
 pub struct SqliteSearchProvider {
     connection: rusqlite::Connection
 }
@@ -42,6 +49,29 @@ impl SqliteSearchProvider {
 
         match package_query {
             Ok(package_iter) => package_iter.map(
+                    |element| element.unwrap()
+                ).collect(),
+            Err(_) => Vec::new()
+        }
+    }
+
+    /// Search for files that match a given query string
+    pub fn search_files(&self, query_string: &String) -> Vec<PackageFile> {
+        let mut stmt = self.connection
+            .prepare("SELECT filename, package, source FROM contents WHERE name MATCH ?1 LIMIT 80")
+            .unwrap();
+
+        let file_query = stmt.query_map(
+                &[&query_string],
+                |row| PackageFile{
+                    filename: row.get(0),
+                    package: row.get(1),
+                    source: row.get(2)
+                }
+            );
+
+        match file_query {
+            Ok(file_iter) => file_iter.map(
                     |element| element.unwrap()
                 ).collect(),
             Err(_) => Vec::new()

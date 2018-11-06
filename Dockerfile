@@ -1,18 +1,21 @@
 FROM ubuntu:bionic
 
-RUN apt-get update && apt-get install python3 python3-pip -y && \
+RUN apt-get update && apt-get install python3 python3-pip xz-utils gosu curl -y && \
     pip3 install click requests && apt-get clean
 
-WORKDIR /opt
+COPY ubuntu-package-search \
+    load_data.py \
+    run.sh \
+    /opt/
 
-COPY ubuntu-package-search .
-
-COPY load_data.py load_data.py
-
-COPY run.sh run.sh
-
-COPY templates templates
+COPY templates /opt/templates
 
 EXPOSE 8080
 
-CMD ["/bin/bash", "run.sh"]
+RUN groupadd -r searchapp --gid=999 && \
+    useradd -r -g searchapp --uid=999 --shell=/bin/bash searchapp && \
+    chown searchapp:searchapp -R /opt/
+
+VOLUME [ "/opt/data" ]
+
+CMD ["/opt/run.sh"]

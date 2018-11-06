@@ -45,6 +45,13 @@ lazy_static! {
         tera.autoescape_on(vec!["html", ".sql"]);
         tera
     };
+
+    pub static ref DATABASE_FILE: String = {
+        match std::env::var("DATABASE_FILE") {
+            Ok(filename) => filename,
+            Err(_) => String::from("database.sqlite3")
+        }
+    };
 }
 
 fn router() -> Router {
@@ -56,7 +63,7 @@ fn router() -> Router {
 }
 
 pub fn search(mut state: State) -> (State, Response<Body>) {
-    let search_provider = sqlite::SqliteSearchProvider::new("database.sqlite3");
+    let search_provider = sqlite::SqliteSearchProvider::new(&DATABASE_FILE);
 
     let mut template_context = tera::Context::new();
 
