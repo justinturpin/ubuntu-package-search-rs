@@ -80,6 +80,7 @@ pub fn index(state: State) -> (State, Response<Body>) {
     let mut template_context = tera::Context::new();
 
     template_context.insert("query", &"".to_string());
+    template_context.insert("search_type", &SearchType::Package);
 
     let contents = TERA.render("index.html", &template_context).unwrap();
 
