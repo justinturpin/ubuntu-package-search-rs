@@ -11,8 +11,7 @@ pub struct Package {
 #[derive(Debug, Serialize)]
 pub struct PackageFile {
     filename: String,
-    package: String,
-    source: String
+    package: String
 }
 
 pub struct SqliteSearchProvider {
@@ -58,15 +57,14 @@ impl SqliteSearchProvider {
     /// Search for files that match a given query string
     pub fn search_files(&self, query_string: &String) -> Vec<PackageFile> {
         let mut stmt = self.connection
-            .prepare("SELECT filename, package, source FROM contents WHERE name MATCH ?1 LIMIT 80")
+            .prepare("SELECT filename, package FROM contents WHERE filename MATCH ?1 LIMIT 80")
             .unwrap();
 
         let file_query = stmt.query_map(
                 &[&query_string],
                 |row| PackageFile{
                     filename: row.get(0),
-                    package: row.get(1),
-                    source: row.get(2)
+                    package: row.get(1)
                 }
             );
 

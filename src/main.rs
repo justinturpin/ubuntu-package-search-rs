@@ -34,9 +34,20 @@ use serde_derive::{Serialize, Deserialize};
 
 // ------------------------------------
 
+#[derive(Serialize, Deserialize)]
+enum SearchType {
+    #[serde(rename = "package")]
+    Package,
+    #[serde(rename = "file")]
+    File
+}
+
 #[derive(Deserialize, StateData, StaticResponseExtender)]
 struct QueryStringExtractor {
     query: Option<String>,
+
+    #[serde(rename = "type")]
+    search_type: Option<SearchType>
 }
 
 lazy_static! {
@@ -56,10 +67,27 @@ lazy_static! {
 
 fn router() -> Router {
     build_simple_router(|route| {
-        route.get("/")
+        route.get("/search")
             .with_query_string_extractor::<QueryStringExtractor>()
             .to(search);
+
+        route.get("/")
+            .to(index);
     })
+}
+
+pub fn index(state: State) -> (State, Response<Body>) {
+    let mut template_context = tera::Context::new();
+
+    template_context.insert("query", &"".to_string());
+
+    let contents = TERA.render("index.html", &template_context).unwrap();
+
+    let res = create_response(
+        &state, StatusCode::OK, mime::TEXT_HTML, contents
+    );
+
+    (state, res)
 }
 
 pub fn search(mut state: State) -> (State, Response<Body>) {
@@ -69,11 +97,28 @@ pub fn search(mut state: State) -> (State, Response<Body>) {
 
     let query_param = QueryStringExtractor::take_from(&mut state);
 
-    if let Some(query_string) = query_param.query {
-        let packages = search_provider.search_packages(&query_string);
+    let search_type = match query_param.search_type {
+        Some(s) => s,
+        None => SearchType::Package
+    };
 
-        template_context.insert("package_results", &packages);
+    template_context.insert("search_type", &search_type);
+
+    if let Some(query_string) = query_param.query  {
         template_context.insert("query", &query_string);
+
+        match search_type {
+            SearchType::Package => {
+                let packages = search_provider.search_packages(&query_string);
+
+                template_context.insert("package_results", &packages);
+            },
+            SearchType::File => {
+                let files = search_provider.search_files(&query_string);
+
+                template_context.insert("file_results", &files);
+            }
+        }
     } else {
         template_context.insert("query", &"".to_string());
     }

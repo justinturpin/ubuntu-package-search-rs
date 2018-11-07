@@ -18,4 +18,6 @@ RUN groupadd -r searchapp --gid=999 && \
 
 VOLUME [ "/opt/data" ]
 
+ENV DATABASE_FILE=/opt/data/database.sqlite3
+
 CMD ["/opt/run.sh"]

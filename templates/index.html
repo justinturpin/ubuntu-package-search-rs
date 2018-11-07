@@ -17,16 +17,16 @@
     <body>
         <div id="main">
             <h1>Ubuntu Package Search</h1>
-            <form action="/" method="get">
+            <form action="/search" method="get">
                 <div class="flex one three-600">
                     <div>
                         <input type="input" placeholder="Search" name="query" value="{{ query }}">
                     </div>
 
                     <div>
-                        <select>
-                            <option>Package Name</option>
-                            <option>Contents</option>
+                        <select name="type">
+                            <option value="package" {% if search_type == "package" %}selected{% endif %}>Package Name</option>
+                            <option value="file" {% if search_type == "file" %}selected{% endif %}>Contents</option>
                         </select>
                     </div>
 
@@ -57,6 +57,24 @@
                     {% endfor %}
                 </table>
             {% endif %}
+
+            {% if file_results %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Filename</th>
+                        <th>Package</th>
+                    </tr>
+                </thead>
+
+                {% for file in file_results %}
+                    <tr>
+                        <td>{{ file.filename }}</td>
+                        <td>{{ file.package }}</td>
+                    </tr>
+                {% endfor %}
+            {% endif %}
+
         </div>
     </body>
 </html>
