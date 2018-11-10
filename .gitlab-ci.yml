@@ -1,13 +1,8 @@
 image: rust:latest
 
 variables:
-  DOCKER_HOST: tcp://docker:2375/
-  DOCKER_DRIVER: overlay2
   CARGO_HOME: $CI_PROJECT_DIR/cargo
   PIP_CACHE_DIR: $CI_PROJECT_DIR/.pip
-
-services:
-  - docker:dind
 
 cache:
   key: ${CI_COMMIT_REF_SLUG}
