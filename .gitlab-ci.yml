@@ -26,10 +26,8 @@ compile:
 
 build:
   stage: build
-  image: alpine:edge
+  image: docker:stable
   script:
-    - apk add -U docker
-    - cp target/release/ubuntu-package-search .
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.compileandrun.com
     - docker build -t registry.compileandrun.com/ionstream/ubuntu-package-search-rs .
     - docker push registry.compileandrun.com/ionstream/ubuntu-package-search-rs
@@ -45,10 +43,15 @@ deploy:
     key: ${CI_JOB_NAME}
     paths:
       - ".pip"
+      - "env"
+
+  before_script:
+    - apk add -U openssh build-base openssl-dev libffi-dev
+    - python3 -m venv env
+    - source env/bin/activate
+    - pip3 install fabric3
 
   script:
-    - apk add -U openssh build-base openssl-dev libffi-dev
-    - pip3 install fabric3
     - mkdir ~/.ssh && chmod 700 ~/.ssh
     - echo "${SSH_KEY}" > ~/.ssh/id_rsa && chmod 600 ~/.ssh/id_rsa
     - ssh-keyscan compileandrun.com > ~/.ssh/known_hosts && chmod 600 ~/.ssh/known_hosts
