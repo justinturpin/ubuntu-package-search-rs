@@ -19,6 +19,10 @@ compile:
       - cargo
   script:
     - cargo build --release
+    - cp target/release/ubuntu-package-search .
+  artifacts:
+    paths:
+    - ubuntu-package-search
 
 build:
   stage: build
