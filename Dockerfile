@@ -1,5 +1,9 @@
 FROM ubuntu:bionic
 
+RUN apt-get update && apt-get install xz-utils gosu curl -y && \
+    apt-get clean && \
+    rm -rf /var/lib/dpkg/* && rm -rf /var/lib/apt/*
+
 COPY ubuntu-package-search \
     run.sh \
     /opt/
