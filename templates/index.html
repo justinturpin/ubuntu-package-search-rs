@@ -1,84 +1,64 @@
-<!doctype html>
+{% extends "base.html" %}
 
-<html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+{% block content %}
+    <p>Search Ubuntu packages by name or contents. Supports wildcards.</p>
 
-        <link rel="stylesheet" href="https://unpkg.com/picnic">
+    <form action="/search" method="get">
+        <fieldset class="flex one three-600">
+            <label>
+                <input type="input" placeholder="Search" name="query" value="{{ query }}">
+            </label>
 
-        <style type="text/css">
-            body { margin: 0 auto; max-width: 1200px }
-            table { width: 100% }
-            h1 a { color: black }
-        </style>
+            <label>
+                <select name="type">
+                    <option value="package" {% if search_type == "package" %}selected{% endif %}>Package Name</option>
+                    <option value="file" {% if search_type == "file" %}selected{% endif %}>Contents</option>
+                </select>
+            </label>
 
-        <title>Ubuntu Bionic Package Search</title>
-    </head>
+            <label id="submit">
+                <input value="Search" type="submit">
+            </label>
 
-    <body>
-        <div id="main">
-            <h1><a href="/">Ubuntu Package Search</a></h1>
+        </fieldset>
+    </form>
 
-            <p>Search Ubuntu packages by name or contents. Supports wildcards.</p>
+    {% if package_results %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Package Name</th>
+                    <th>Version</th>
+                    <th>Source</th>
+                </tr>
+            </thead>
 
-            <form action="/search" method="get">
-                <div class="flex one three-600">
-                    <div>
-                        <input type="input" placeholder="Search" name="query" value="{{ query }}">
-                    </div>
+            {% for package in package_results %}
+                <tr>
+                    <td>
+                        <a href="https://packages.ubuntu.com/bionic/{{ package.name }}" target="_blank">{{ package.name }}</a>
+                    </td>
+                    <td>{{ package.version }}</td>
+                    <td>{{ package.source }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% endif %}
 
-                    <div>
-                        <select name="type">
-                            <option value="package" {% if search_type == "package" %}selected{% endif %}>Package Name</option>
-                            <option value="file" {% if search_type == "file" %}selected{% endif %}>Contents</option>
-                        </select>
-                    </div>
+    {% if file_results %}
+    <table>
+        <thead>
+            <tr>
+                <th>Filename</th>
+                <th>Package</th>
+            </tr>
+        </thead>
 
-                    <div>
-                        <input value="Search" type="submit">
-                    </div>
-                </div>
-            </form>
-
-            {% if package_results %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Package Name</th>
-                            <th>Version</th>
-                            <th>Source</th>
-                        </tr>
-                    </thead>
-
-                    {% for package in package_results %}
-                        <tr>
-                            <td>
-                                <a href="https://packages.ubuntu.com/bionic/{{ package.name }}" target="_blank">{{ package.name }}</a>
-                            </td>
-                            <td>{{ package.version }}</td>
-                            <td>{{ package.source }}</td>
-                        </tr>
-                    {% endfor %}
-                </table>
-            {% endif %}
-
-            {% if file_results %}
-            <table>
-                <thead>
-                    <tr>
-                        <th>Filename</th>
-                        <th>Package</th>
-                    </tr>
-                </thead>
-
-                {% for file in file_results %}
-                    <tr>
-                        <td>{{ file.filename }}</td>
-                        <td>{{ file.package }}</td>
-                    </tr>
-                {% endfor %}
-            {% endif %}
-
-        </div>
-    </body>
-</html>
+        {% for file in file_results %}
+            <tr>
+                <td>{{ file.filename }}</td>
+                <td>{{ file.package }}</td>
+            </tr>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,37 @@
+<!doctype html>
+
+<html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <link rel="stylesheet" href="https://unpkg.com/picnic">
+
+        <style type="text/css">
+            body { margin: 0 auto; max-width: 1200px }
+            table { width: 100% }
+            h1 a { color: black }
+            .sidebar { float: right; margin-right: 20px }
+            .demo { position: relative }
+            #submit input { margin: 0 }
+            table { margin-bottom: 80px }
+        </style>
+
+        <title>Ubuntu Package Search</title>
+    </head>
+
+    <body>
+        <nav class="demo">
+            <a href="/" class="brand"">
+                <span>Ubuntu Package Search</span>
+            </a>
+
+            <div class="sidebar">
+                <a href="/about.html"><h4>About</h4></a>
+            </div>
+        </nav>
+
+        <div id="main">
+            {% block content %}{% endblock %}
+        </div>
+    </body>
+</html>

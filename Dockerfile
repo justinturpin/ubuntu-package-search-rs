@@ -1,10 +1,6 @@
 FROM ubuntu:bionic
 
-RUN apt-get update && apt-get install python3 python3-pip xz-utils gosu curl -y && \
-    pip3 install click requests && apt-get clean
-
 COPY ubuntu-package-search \
-    load_data.py \
     run.sh \
     /opt/
 

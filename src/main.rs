@@ -73,9 +73,14 @@ fn router() -> Router {
 
         route.get("/")
             .to(index);
+
+        route.get("/about.html")
+            .to(about);
     })
 }
 
+/// Handler for the main Index page, which is just the search minus the actual results.
+/// This can probably be combined with search at some point?
 pub fn index(state: State) -> (State, Response<Body>) {
     let mut template_context = tera::Context::new();
 
@@ -91,6 +96,7 @@ pub fn index(state: State) -> (State, Response<Body>) {
     (state, res)
 }
 
+/// Handler the Search page
 pub fn search(mut state: State) -> (State, Response<Body>) {
     let search_provider = sqlite::SqliteSearchProvider::new(&DATABASE_FILE);
 
@@ -125,6 +131,17 @@ pub fn search(mut state: State) -> (State, Response<Body>) {
     }
 
     let contents = TERA.render("index.html", &template_context).unwrap();
+
+    let res = create_response(
+        &state, StatusCode::OK, mime::TEXT_HTML, contents
+    );
+
+    (state, res)
+}
+
+/// Handler for the About page
+pub fn about(state: State) -> (State, Response<Body>) {
+    let contents = TERA.render("about.html", &tera::Context::default()).unwrap();
 
     let res = create_response(
         &state, StatusCode::OK, mime::TEXT_HTML, contents
