@@ -13,6 +13,7 @@ extern crate futures;
 extern crate rusqlite;
 extern crate tera;
 extern crate lazy_static;
+extern crate flate2;
 
 mod sqlite;
 
@@ -104,6 +105,8 @@ pub fn search(mut state: State) -> (State, Response<Body>) {
 
     let query_param = QueryStringExtractor::take_from(&mut state);
 
+    // By default, set the search type to Package
+
     let search_type = match query_param.search_type {
         Some(s) => s,
         None => SearchType::Package
@@ -151,6 +154,12 @@ pub fn about(state: State) -> (State, Response<Body>) {
 }
 
 pub fn main() {
+    // Load data into our SQLite database file
+    println!("Loading data into sqlite database {}...", DATABASE_FILE.to_string());
+
+    sqlite::load_data(&DATABASE_FILE);
+
+    // Start server
     let addr = "0.0.0.0:8080";
     println!("Listening for requests at http://{}", addr);
     gotham::start(addr, || Ok(router()))
