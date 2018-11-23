@@ -16,6 +16,7 @@ extern crate lazy_static;
 extern crate flate2;
 
 mod sqlite;
+mod loader;
 
 // ------------------------------------
 
@@ -155,9 +156,18 @@ pub fn about(state: State) -> (State, Response<Body>) {
 
 pub fn main() {
     // Load data into our SQLite database file
-    println!("Loading data into sqlite database {}...", DATABASE_FILE.to_string());
 
-    sqlite::load_data(&DATABASE_FILE);
+    let path_string = DATABASE_FILE.to_string();
+
+    let path = std::path::Path::new(&path_string);
+
+    if path.exists() {
+        println!("Database file {} already exists, not loading.", path_string);
+    } else {
+        println!("Loading data into sqlite database {}...", path_string);
+
+        loader::load_data(&DATABASE_FILE);
+    }
 
     // Start server
     let addr = "0.0.0.0:8080";
