@@ -157,20 +157,24 @@ pub fn about(state: State) -> (State, Response<Body>) {
 pub fn main() {
     // Load data into our SQLite database file
 
-    let path_string = DATABASE_FILE.to_string();
+    let thread = std::thread::spawn(move || {
+        let path_string = DATABASE_FILE.to_string();
 
-    let path = std::path::Path::new(&path_string);
+        let path = std::path::Path::new(&path_string);
 
-    if path.exists() {
-        println!("Database file {} already exists, not loading.", path_string);
-    } else {
-        println!("Loading data into sqlite database {}...", path_string);
+        if path.exists() {
+            println!("Database file {} already exists, not loading.", path_string);
+        } else {
+            println!("Loading data into sqlite database {}...", path_string);
 
-        loader::load_data(&DATABASE_FILE);
-    }
+            loader::load_data(&DATABASE_FILE);
+        }
+    });
 
     // Start server
     let addr = "0.0.0.0:8080";
     println!("Listening for requests at http://{}", addr);
-    gotham::start(addr, || Ok(router()))
+    gotham::start(addr, || Ok(router()));
+
+    thread.join().unwrap();
 }
