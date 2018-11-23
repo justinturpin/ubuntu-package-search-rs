@@ -35,7 +35,10 @@ impl SqliteSearchProvider {
     /// Construct a new SqliteSearchProvider given a database filename
     pub fn new(database_filename: &str) -> SqliteSearchProvider {
         SqliteSearchProvider {
-            connection: rusqlite::Connection::open(database_filename).unwrap()
+            connection: rusqlite::Connection::open_with_flags(
+                database_filename,
+                rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY
+            ).unwrap()
         }
     }
 

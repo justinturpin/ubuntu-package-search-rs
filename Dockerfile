@@ -1,14 +1,14 @@
 FROM ubuntu:bionic
 
-RUN apt-get update && apt-get install xz-utils gosu curl -y && \
+WORKDIR /opt
+
+RUN apt-get update && apt-get install libsqlite3-0 libssl1.1 gosu -y && \
     apt-get clean && \
     rm -rf /var/lib/dpkg/* && rm -rf /var/lib/apt/*
 
-COPY ubuntu-package-search \
-    run.sh \
-    /opt/
+COPY ubuntu-package-search .
 
-COPY templates /opt/templates
+COPY templates templates
 
 EXPOSE 8080
 
@@ -20,4 +20,5 @@ VOLUME [ "/opt/data" ]
 
 ENV DATABASE_FILE=/opt/data/database.sqlite3
 
-CMD ["/opt/run.sh"]
+CMD chown searchapp:searchapp /opt/data && \
+    gosu searchapp /opt/ubuntu-package-search
