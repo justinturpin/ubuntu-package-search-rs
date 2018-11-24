@@ -12,8 +12,8 @@
             h1 a { color: black }
             .sidebar { float: right; margin-right: 20px }
             .demo { position: relative }
-            #submit input { margin: 0 }
             table { margin-bottom: 80px }
+            input[type=submit] { margin-top: 0; width: 100%; background: green }
         </style>
 
         <title>Ubuntu Package Search</title>
@@ -30,8 +30,6 @@
             </div>
         </nav>
 
-        <div id="main">
-            {% block content %}{% endblock %}
-        </div>
+        {% block content %}{% endblock %}
     </body>
 </html>

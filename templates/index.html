@@ -4,8 +4,8 @@
     <p>Search Ubuntu packages by name or contents. Supports wildcards.</p>
 
     <form action="/search" method="get">
-        <fieldset class="flex one three-600">
-            <label>
+        <fieldset class="flex four">
+            <label class="half">
                 <input type="input" placeholder="Search" name="query" value="{{ query }}">
             </label>
 
@@ -16,10 +16,9 @@
                 </select>
             </label>
 
-            <label id="submit">
+            <label>
                 <input value="Search" type="submit">
             </label>
-
         </fieldset>
     </form>
 
